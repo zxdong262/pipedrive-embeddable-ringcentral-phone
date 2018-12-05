@@ -10,14 +10,67 @@ import {
 import {
   popup,
   createElementFromHTML,
-  formatPhone
+  formatPhone,
+  host
 } from '../common/helpers'
-//import fetch, {handleErr, jsonHeader} from '../common/fetch'
+import fetch from '../common/fetch'
 import {thirdPartyConfigs} from '../common/app-config'
 
 let {
   serviceName
 } = thirdPartyConfigs
+
+/**
+ * get session token for request from server
+ */
+export function getSessionToken() {
+  let {cookie} = document
+  let arr = cookie.match(/pipe-session-token=([^;]+);/)
+  return arr ? arr[1] : ''
+}
+
+/**
+ * get current user info
+ * @param {string} token
+ */
+export function getSelfInfo(token = getSessionToken()) {
+  return fetch.get(`${host}/api/v1/users/self?session_token=${token}&strict_mode=true&_=${+new Date()}`)
+}
+
+/**
+ * convert pipedrive contact data to ringcentral format data
+ * @param {object} data
+ * @return [{
+    id: '123456', // id to identify third party contact
+    name: 'TestService Name', // contact name
+    type: 'TestService', // need to same as service name
+    phoneNumbers: [{
+      phoneNumber: '+1234567890',
+      phoneType: 'directPhone'
+    }],
+    emails: ['test@email.com']
+  }]
+ */
+function formatData(data) {
+  return data.data.map(d => {
+    let {id, name, owner_id, label, phone, email} = d
+    return {
+      id,
+      name,
+      phoneNumbers: phone.map(p => {
+        return {
+          phoneNumber: p.value,
+          primary: p.primary,
+          phoneType: p.label
+        }
+      }),
+      emails: email.map(r => r.value),
+      type: serviceName,
+      owner_id,
+      label
+    }
+  })
+}
 
 /**
  * click contact info panel event handler
@@ -130,17 +183,13 @@ export const getContacts = _.debounce(async function getContacts() {
     console.log('use cache')
     return cached
   }
-  // the final conatct result format
-  let final = [{
-    id: '123456', // id to identify third party contact
-    name: 'TestService Name', // contact name
-    type: 'TestService', // need to same as service name
-    phoneNumbers: [{
-      phoneNumber: '+1234567890',
-      phoneType: 'directPhone'
-    }],
-    emails: ['test@email.com']
-  }]
+  let token = getSessionToken()
+  let self = await getSelfInfo(token)
+  let uid = self.data.id
+  let url = `${host}/api/v1/persons/list:(cc_email,active_flag,id,name,label,org_id,email,phone,closed_deals_count,open_deals_count,next_activity_date,owner_id,next_activity_time)?session_token=${token}&strict_mode=true&user_id=${uid}&sort=&label=&start=0&type=person&_=${+new Date()}`
+  let data = await fetch.get(url)
+
+  let final = formatData(data)
   await setCache(window.rc.cacheKey, final)
   return final
 }, 100, {
@@ -193,8 +242,7 @@ export async function showContactInfoPanel(call) {
   // if (contactTrLinkElem) {
   //   return showNativeContact(contact, contactTrLinkElem)
   // }
-  let {host, protocol} = location
-  let url = `${protocol}//${host}/details/contact/${contact.id}`
+  let url = `${host}/person/${contact.id}`
   let elem = createElementFromHTML(
     `
     <div class="animate rc-contact-panel" draggable="false">

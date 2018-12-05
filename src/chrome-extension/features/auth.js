@@ -67,7 +67,8 @@ export async function doAuth() {
   hideAuthBtn()
   let frameWrap = document.getElementById('rc-auth-hs')
   frameWrap && frameWrap.classList.remove('rc-hide-to-side')
-  //await do other auth work()
+  window.rc.updateToken('true')
+  notifyRCAuthed()
 }
 
 /**
@@ -124,16 +125,5 @@ export function renderAuthButton() {
  * todo: you can customize this
  */
 export function renderAuthPanel() {
-  let pop = createElementFromHTML(
-    `
-    <div id="rc-auth-hs" class="animate rc-auth-wrap rc-hide-to-side" draggable="false">
-      Authing...
-    </div>
-    `
-  )
-  if (
-    !document.getElementById('rc-auth-hs')
-  ) {
-    document.body.appendChild(pop)
-  }
+  return false
 }
