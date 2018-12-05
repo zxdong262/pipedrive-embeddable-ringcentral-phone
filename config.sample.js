@@ -36,7 +36,7 @@ module.exports = {
   thirdPartyConfigs: {
 
     //service name, one word only, such as Insightly, RedTailCRM...
-    serviceName: 'noname',
+    serviceName: 'pipedrive',
 
     // show call log sync desc form or not
     showCallLogSyncForm: true

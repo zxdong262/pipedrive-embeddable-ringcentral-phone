@@ -10,26 +10,10 @@ Add RingCentral Embeddable Voice widgets to pipedrive
 - Convert phone number text to Click-to-call link.
 - Popup caller/callee info panel when call inbound/outbound.
 - Build with custom app config.
-- Show contact event from RingCentral Widgets.
-- Manully/auto Sync Call log to third party contact event.
 
-## Demo video(Insightly)
+<!-- - Show contact event from RingCentral Widgets.
+- Manully/auto Sync Call log to third party contact event. -->
 
-[https://youtu.be/Qfje5d5OdK0](https://youtu.be/Qfje5d5OdK0)
-
-## Screenshots(Insightly and Hubspot)
-
-| screenshots            |  screenshots |
-:-------------------------:|:-------------------------:
-![insightly-1](https://github.com/zxdong262/insightly-embeddable-ringcentral-phone/raw/master/screenshots/insightly-5.png) | ![insightly-1](https://github.com/zxdong262/insightly-embeddable-ringcentral-phone/raw/master/screenshots/insightly-4.png)
-![insightly-1](https://github.com/zxdong262/insightly-embeddable-ringcentral-phone/raw/master/screenshots/insightly-3.png) | ![insightly-1](https://github.com/zxdong262/insightly-embeddable-ringcentral-phone/raw/master/screenshots/insightly-2.png)
-![insightly-1](https://github.com/zxdong262/insightly-embeddable-ringcentral-phone/raw/master/screenshots/insightly-1.png) | ![x](https://github.com/zxdong262/hubspot-embeddable-ringcentral-phone/raw/master/screenshots/hs6.png)
-![x](https://github.com/zxdong262/hubspot-embeddable-ringcentral-phone/raw/master/screenshots/hs7.png) |  
-
-## Realworld examples
-
-- [insightly-embeddable-ringcentral-phone](https://github.com/zxdong262/insightly-embeddable-ringcentral-phone)
-- [hubspot-embeddable-ringcentral-phone](https://github.com/zxdong262/hubspot-embeddable-ringcentral-phone)
 
 ## Build and Use
 
@@ -71,17 +55,6 @@ npm start
     appServer: 'your ringCentral app Auth Server URL'
   },
 ```
-
-## Make the features works
-
-For now it is just a widget, you can call with it, to make all the features work, still need more developer work.
-
-To make it easier, we already set common modules to reduce developer efforts, you could set proper selectors, methods to make all features to work:
-
-- Edit [src/chrome-extension/config.js](src/chrome-extension/config.js) to make click-to-call related features to work
-- Follow the guide in [src/chrome-extension/features/third-party-api.js](src/chrome-extension/features/third-party-api.js) to make all third party features to work.
-- Further more you can edit [dist/manifest.json](dist/manifest.json) and [dist/background.js](dist/background.js) to do more customization work.
-- And you can always read [Realworld examples](#realworld-examples) source code as examples
 
 ## Credits
 
