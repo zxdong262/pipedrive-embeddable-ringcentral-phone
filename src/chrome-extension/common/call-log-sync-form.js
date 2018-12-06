@@ -46,7 +46,7 @@ export function createForm(call, serviceName, onSubmit) {
         <input
           value=""
           class="rc-sync-input"
-          placeholder="title"
+          placeholder="desciption"
         />
         <div class="rc-pd1b rc-sync-btns rc-mg2t">
           <button class="rc-sync-btn rc-btn-cancel rc-mg1r" type="button">Cancel</button>
@@ -59,7 +59,7 @@ export function createForm(call, serviceName, onSubmit) {
     e.preventDefault()
     let v = dom.querySelector('.rc-sync-input').value
     onSubmit({
-      title: v || ''
+      description: v || ''
     })
     onCancel()
   }
