@@ -53,7 +53,7 @@ export function getSelfInfo(token = getSessionToken()) {
  */
 function formatData(data) {
   return data.data.map(d => {
-    let {id, name, owner_id, label, phone, email} = d
+    let {id, name, owner_id, label, phone, email, org_id} = d
     return {
       id,
       name,
@@ -64,6 +64,7 @@ function formatData(data) {
           phoneType: p.label
         }
       }),
+      org_id,
       emails: email.map(r => r.value),
       type: serviceName,
       owner_id,

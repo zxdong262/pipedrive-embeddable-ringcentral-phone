@@ -11,24 +11,29 @@ import {
 import _ from 'lodash'
 import {
   notify,
-  host
+  host,
+  formatPhone
 } from '../common/helpers'
+import fetch from '../common/fetch'
+import moment from 'moment'
+import {getSessionToken, getContacts} from './contacts'
+import {getUserId} from '../config'
 
 let {
   showCallLogSyncForm,
   serviceName
 } = thirdPartyConfigs
 
+const userId = getUserId()
+
 /**
  * when sync success, notify success info
  * todo: set real link
  * @param {string} id
  */
-export function notifySyncSuccess({
-  id
-}) {
+export function notifySyncSuccess() {
   let type = 'success'
-  let url = `${host}/details/Event/${id}`
+  let url = `${host}/activities/calendar/user/${userId}`
   let msg = `
     <div>
       <div class="rc-pd1b">
@@ -76,6 +81,42 @@ export async function syncCallLogToThirdParty(body) {
 }
 
 /**
+ * get contact id
+ * @param {object} body
+ */
+async function getContact(body) {
+  if (body.call) {
+    let obj = _.find(
+      [
+        ...body.call.toMatches,
+        ...body.call.fromMatches
+      ],
+      m => m.type === serviceName
+    )
+    return obj
+  }
+  else {
+    let n = body.direction === 'Outbound'
+      ? body.to.phoneNumber
+      : body.from.phoneNumber
+    let fn = formatPhone(n)
+    let contacts = await getContacts()
+    let res = _.find(
+      contacts,
+      contact => {
+        let {
+          phoneNumbers
+        } = contact
+        return _.find(phoneNumbers, nx => {
+          return fn === formatPhone(nx.phoneNumber)
+        })
+      }
+    )
+    return res
+  }
+}
+
+/**
  * sync call log action
  * todo: need you find out how to do the sync
  * you may check the CRM site to find the right api to do it
@@ -83,13 +124,48 @@ export async function syncCallLogToThirdParty(body) {
  * @param {*} formData 
  */
 async function doSync(body, formData) {
-  console.log(body, formData)
-  let success = true
+  let contact = await getContact(body)
+  if (!contact) {
+    return notify('no related contact', 'warn')
+  }
+  let {id, org_id} = contact
+  let toNumber = _.get(body, 'call.to.phoneNumber')
+  let fromNumber = _.get(body, 'call.from.phoneNumber')
+  let {duration} = body.call
+  let note = `
+    Call from ${fromNumber} to ${toNumber}, duration: ${duration} seconds.
+    ${formData.description || ''}`
+  let token = getSessionToken()
+  let url = `${host}/api/v1/activities?session_token=${token}&strict_mode=true`
+  let due_date = moment(body.call.startTime).format('YYYY-MM-DD')
+  let s = (duration % 60).toString()
+  let m = Math.floor(duration / 60).toString()
+  s = s.length > 1 ? s : '0' + s
+  m = m.length > 1 ? m : '0' + m
+  duration = `${m}:${s}`
+  let due_time = moment(body.call.startTime).format('hh:mm')
+  let bd = {
+    due_date,
+    due_time,
+    duration,
+    note,
+    done: true,
+    participants: [
+      {
+        person_id: id,
+        primary_flag: true
+      }
+    ],
+    person_id: id,
+    org_id,
+    assigned_to_user_id: userId
+  }
+  let res = await fetch.post(url, bd)
+  let success = res && res.data
   if (success) {
     notifySyncSuccess({id: ''})
   } else {
     notify('call log sync to third party failed', 'warn')
-    console.log('post /Metadata/Create error')
     console.log('some error')
   }
 }
